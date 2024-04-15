@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/coding-ia/packer-plugin-ebstpm/internal/post-processor/ebstpm"
 	"github.com/hashicorp/packer-plugin-sdk/plugin"
-	"github.com/hashicorp/packer-plugin-sdk/version"
 	"os"
 )
 
