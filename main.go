@@ -11,7 +11,6 @@ import (
 func main() {
 	pps := plugin.NewSet()
 	pps.RegisterPostProcessor("create", new(ebstpm.PostProcessor))
-	pps.SetVersion(version.SDKVersion)
 	err := pps.Run()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
