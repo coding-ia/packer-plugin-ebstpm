@@ -1,3 +1,5 @@
+//go:generate packer-sdc mapstructure-to-hcl2 -type Config
+
 package ebstpm
 
 import (
@@ -38,7 +40,6 @@ func (p *PostProcessor) ConfigSpec() hcldec.ObjectSpec {
 }
 
 func (p *PostProcessor) Configure(raws ...interface{}) error {
-	//p.config.ctx.Funcs = awscommon.TemplateFuncs
 	err := config.Decode(&p.config, &config.DecodeOpts{
 		PluginType:         BuilderId,
 		Interpolate:        true,
