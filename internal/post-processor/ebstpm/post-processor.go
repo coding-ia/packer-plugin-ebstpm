@@ -83,8 +83,13 @@ func (p *PostProcessor) PostProcess(ctx context.Context, ui packer.Ui, artifact 
 	p.config.ctx.Data = generatedData
 
 	bId := artifact.BuilderId()
-	_ = bId
 
+	if bId != "mitchellh.amazonebs" {
+		ui.Say("Skipping secureboot post-process.")
+		return artifact, true, true, nil
+	}
+
+	ui.Say("Creating secureboot images...")
 	err = processArtifact(artifact.Id(), p.config)
 	if err != nil {
 		return artifact, true, true, err
@@ -139,7 +144,6 @@ func createTPM(region string, amiID string, config Config) error {
 	if err != nil {
 		return err
 	}
-	_ = describeAttributeOutput
 
 	mappings := cloneBlockDeviceMappings(image.BlockDeviceMappings)
 
