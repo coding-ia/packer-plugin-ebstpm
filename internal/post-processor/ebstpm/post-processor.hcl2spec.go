@@ -14,6 +14,9 @@ type FlatConfig struct {
 	PackerOnError       *string           `mapstructure:"packer_on_error" cty:"packer_on_error" hcl:"packer_on_error"`
 	PackerUserVars      map[string]string `mapstructure:"packer_user_variables" cty:"packer_user_variables" hcl:"packer_user_variables"`
 	PackerSensitiveVars []string          `mapstructure:"packer_sensitive_variables" cty:"packer_sensitive_variables" hcl:"packer_sensitive_variables"`
+	AMIName             *string           `mapstructure:"ami_name" cty:"ami_name" hcl:"ami_name"`
+	TPMVersion          *string           `mapstructure:"tpm_version" cty:"tpm_version" hcl:"tpm_version"`
+	UEFIData            *string           `mapstructure:"uefi_data" cty:"uefi_data" hcl:"uefi_data"`
 }
 
 func (*Config) FlatMapstructure() interface{ HCL2Spec() map[string]hcldec.Spec } {
@@ -30,6 +33,9 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"packer_on_error":            &hcldec.AttrSpec{Name: "packer_on_error", Type: cty.String, Required: false},
 		"packer_user_variables":      &hcldec.AttrSpec{Name: "packer_user_variables", Type: cty.Map(cty.String), Required: false},
 		"packer_sensitive_variables": &hcldec.AttrSpec{Name: "packer_sensitive_variables", Type: cty.List(cty.String), Required: false},
+		"ami_name":                   &hcldec.AttrSpec{Name: "ami_name", Type: cty.String, Required: true},
+		"tpm_version":                &hcldec.AttrSpec{Name: "tpm_version", Type: cty.String, Required: false},
+		"uefi_data":                  &hcldec.AttrSpec{Name: "uefi_data", Type: cty.String, Required: true},
 	}
 	return s
 }
