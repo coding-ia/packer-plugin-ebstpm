@@ -91,25 +91,24 @@ func (p *PostProcessor) PostProcess(ctx context.Context, ui packer.Ui, artifact 
 	}
 
 	ui.Say("Creating secureboot images...")
-	err = processArtifact(artifact.Id(), p.config)
-	if err != nil {
-		return artifact, true, true, err
-	}
+	processArtifact(artifact.Id(), p.config, ui)
 
 	return artifact, true, true, nil
 }
 
-func processArtifact(id string, config Config) error {
-	parts := strings.Split(id, ":")
-	if len(parts) == 2 {
-		region := parts[0]
-		amiID := parts[1]
-		err := createTPM(region, amiID, config)
-		if err != nil {
-			return err
+func processArtifact(id string, config Config, ui packer.Ui) {
+	artifacts := strings.Split(id, ",")
+	for _, artifact := range artifacts {
+		parts := strings.Split(artifact, ":")
+		if len(parts) == 2 {
+			region := parts[0]
+			amiID := parts[1]
+			err := createTPM(region, amiID, config)
+			if err != nil {
+				ui.Error(fmt.Sprintf("Error creating image: %s", err))
+			}
 		}
 	}
-	return nil
 }
 
 func createTPM(region string, amiID string, config Config) error {
