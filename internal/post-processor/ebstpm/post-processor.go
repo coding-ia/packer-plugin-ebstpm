@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/template/interpolate"
 	"log"
 	"strings"
+	"time"
 )
 
 const BuilderId = "packer.post-processor.ebstpm-secureboot"
@@ -179,6 +180,21 @@ func createTPM(region string, amiID string, config Config) error {
 			return err
 		}
 		log.Printf("Copied permissions from %s to %s", aws.StringValue(image.ImageId), imageID)
+	}
+
+	if image.DeprecationTime != nil {
+		deprecationTime, err := time.Parse("2006-01-02T15:04:05Z07:00", aws.StringValue(image.DeprecationTime))
+		if err != nil {
+			return err
+		}
+		deprecationInput := &ec2.EnableImageDeprecationInput{
+			ImageId:     result.ImageId,
+			DeprecateAt: &deprecationTime,
+		}
+		_, err = ec2Svc.EnableImageDeprecation(deprecationInput)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
