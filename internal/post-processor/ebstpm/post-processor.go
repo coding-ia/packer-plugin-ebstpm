@@ -106,7 +106,7 @@ func (p *PostProcessor) PostProcess(ctx context.Context, ui packer.Ui, artifact 
 }
 
 func processArtifact(id string, config Config, ui packer.Ui) map[string]string {
-	var images map[string]string
+	images := make(map[string]string)
 	artifacts := strings.Split(id, ",")
 	for _, artifact := range artifacts {
 		parts := strings.Split(artifact, ":")
