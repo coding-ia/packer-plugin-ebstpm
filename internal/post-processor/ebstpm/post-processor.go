@@ -96,16 +96,18 @@ func (p *PostProcessor) PostProcess(ctx context.Context, ui packer.Ui, artifact 
 	amis := processArtifact(artifact.Id(), p.config, ui)
 
 	if len(amis) > 0 {
+		emptyState := make(map[string]interface{})
 		newArtifact := &awscommon.Artifact{
 			Amis:           amis,
 			BuilderIdValue: BuilderId,
+			StateData:      emptyState,
 			Session:        session,
 		}
 		err := artifact.Destroy()
 		if err != nil {
 			ui.Error(fmt.Sprintf("Error: %s", err))
 		}
-		return newArtifact, false, false, nil
+		return newArtifact, true, false, nil
 	}
 
 	return artifact, true, true, nil
