@@ -77,6 +77,7 @@ func (p *PostProcessor) Configure(raws ...interface{}) error {
 }
 
 func (p *PostProcessor) PostProcess(ctx context.Context, ui packer.Ui, artifact packer.Artifact) (a packer.Artifact, keep bool, forceOverride bool, err error) {
+	session, err := p.config.Session()
 	generatedData := artifact.State("generated_data")
 	if generatedData == nil {
 		// Make sure it's not a nil map so we can assign to it later.
@@ -97,7 +98,12 @@ func (p *PostProcessor) PostProcess(ctx context.Context, ui packer.Ui, artifact 
 	if len(amis) > 0 {
 		newArtifact := &awscommon.Artifact{
 			Amis:           amis,
-			BuilderIdValue: bId,
+			BuilderIdValue: BuilderId,
+			Session:        session,
+		}
+		err := artifact.Destroy()
+		if err != nil {
+			ui.Error(fmt.Sprintf("Error: %s", err))
 		}
 		return newArtifact, false, false, nil
 	}
@@ -214,7 +220,7 @@ func createTPM(region string, amiID string, config Config, ui packer.Ui) (*strin
 		ImageId: image.ImageId,
 	}
 	_, err = ec2Svc.DeregisterImage(deregisterInput)
-	if err != nil {
+	if err == nil {
 		ui.Say(fmt.Sprintf("Deregistered AMI %s at %s", aws.StringValue(image.ImageId), region))
 	}
 
