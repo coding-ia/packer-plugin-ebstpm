@@ -1,6 +1,6 @@
 module github.com/coding-ia/packer-plugin-ebstpm
 
-go 1.21
+go 1.23.5
 
 require (
 	github.com/aws/aws-sdk-go v1.45.6

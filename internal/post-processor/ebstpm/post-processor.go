@@ -64,11 +64,6 @@ func (p *PostProcessor) Configure(raws ...interface{}) error {
 			errs, fmt.Errorf("uefi_data is not set"))
 	}
 
-	if p.config.AMIName == "" {
-		errs = packer.MultiErrorAppend(
-			errs, fmt.Errorf("ami_name is not set"))
-	}
-
 	if len(errs.Errors) > 0 {
 		return errs
 	}
@@ -175,11 +170,28 @@ func createTPM(region string, amiID string, config Config, ui packer.Ui) (*strin
 		BootMode:            aws.String("uefi"),
 		Description:         image.Description,
 		EnaSupport:          image.EnaSupport,
+		ImageLocation:       image.ImageLocation,
 		ImdsSupport:         image.ImdsSupport,
-		Name:                aws.String(config.AMIName),
+		KernelId:            image.KernelId,
+		Name:                image.Name,
+		RamdiskId:           image.RamdiskId,
 		RootDeviceName:      image.RootDeviceName,
+		SriovNetSupport:     image.SriovNetSupport,
 		TpmSupport:          aws.String(config.TPMVersion),
 		UefiData:            &config.UEFIData,
+		VirtualizationType:  image.VirtualizationType,
+	}
+
+	if config.AMIName != "" {
+		input.Name = aws.String(config.AMIName)
+	}
+
+	deregisterInput := &ec2.DeregisterImageInput{
+		ImageId: image.ImageId,
+	}
+	_, err = ec2Svc.DeregisterImage(deregisterInput)
+	if err == nil {
+		ui.Say(fmt.Sprintf("Deregistered AMI %s at %s", aws.StringValue(image.ImageId), region))
 	}
 
 	result, err := ec2Svc.RegisterImage(input)
@@ -188,6 +200,12 @@ func createTPM(region string, amiID string, config Config, ui packer.Ui) (*strin
 	}
 	imageID := aws.StringValue(result.ImageId)
 	log.Printf("Registered new AMI ID: %s", imageID)
+
+	createTagsInput := &ec2.CreateTagsInput{
+		Resources: []*string{result.ImageId},
+		Tags:      image.Tags,
+	}
+	_, err = ec2Svc.CreateTags(createTagsInput)
 
 	if describeAttributeOutput.LaunchPermissions != nil {
 		launchPermissionInput := &ec2.ModifyImageAttributeInput{
@@ -216,14 +234,6 @@ func createTPM(region string, amiID string, config Config, ui packer.Ui) (*strin
 		if err != nil {
 			return nil, err
 		}
-	}
-
-	deregisterInput := &ec2.DeregisterImageInput{
-		ImageId: image.ImageId,
-	}
-	_, err = ec2Svc.DeregisterImage(deregisterInput)
-	if err == nil {
-		ui.Say(fmt.Sprintf("Deregistered AMI %s at %s", aws.StringValue(image.ImageId), region))
 	}
 
 	return result.ImageId, nil
